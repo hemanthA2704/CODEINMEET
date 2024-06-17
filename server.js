@@ -19,6 +19,7 @@ const getAllClients = (roomId) => {
 }
 
 io.on('connection',(socket) =>{
+    console.log("socket" ,) ;
     console.log('socket connected' , socket.id) ;
     socket.on(ACTIONS.JOIN , ({roomId , userName})=>{
         userNameSocketMap[socket.id]=userName ;
@@ -42,9 +43,20 @@ io.on('connection',(socket) =>{
         socket.in(roomId).emit(ACTIONS.CODE_CHANGE,{code}) ;
     });
 
-    socket.on(ACTIONS.SYNC_CODE , ({code , socketId})=> {
+    socket.on(ACTIONS.LANG_CHANGE , ({roomId , language}) => {
+        socket.in(roomId).emit(ACTIONS.LANG_CHANGE , {language})
+    }) ;
+
+    socket.on(ACTIONS.SYNC_CODE , ({code , language, socketId})=> {
         io.to(socketId).emit(ACTIONS.CODE_CHANGE , {code});
+        io.to(socketId).emit(ACTIONS.LANG_CHANGE , {language})
     });
+
+    socket.on(ACTIONS.MSG , ({newMessage , roomId}) => {
+        console.log(newMessage) ;
+        socket.in(roomId).emit(ACTIONS.MSG,{newMessage}) ;
+    } )
+
     // before completely disconnecting this event will be triggered
     // if anyone removing tab or navigating to other tab this (socket will be deleted if tab closes)
     socket.on('disconnecting' , ()=> {

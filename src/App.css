@@ -72,8 +72,8 @@
 
 /* make changes in this for adjusting the leftside and rightside widths */
 .mainWrap{
-    display: grid ;
-    grid-template-columns: 230px 1fr;
+    display: grid ; 
+    grid-template-columns: 325px 1fr;
 }
 
 .leftBlock {
@@ -119,10 +119,88 @@
     margin-top: 5px;
 }
 
-.btns {
+.chatBox {
+    border-radius: 5%;
+    height: 350px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.chatHeading {
+    margin: 0;
+    text-align: center;
+    border-bottom: 1px solid black;
+    background-color:rgb(155, 164, 164);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    flex-shrink: 0; /* Prevent the heading from shrinking */
+    z-index: 1;
+}
+
+.message-list {
+    flex-grow: 1; /* Allow the message list to grow and take the remaining space */
+    overflow-y: auto; 
+}
+
+.message-list .rce-mbox-body {
+    width: 200px;
+    font-size: 12px;
+  }
+
+
+
+.message-list .rce-mbox {
+    background-color:#e6dca8;
+}
+
+.message-list .rce-mbox.rce-mbox-right {
+    background-color:#b3cd7f;
+    
+    
+}
+
+.down {
     display: flex;
     justify-content: center;
     position: relative;
+    margin-top: 5px;
+}
+
+.sendBox {
+    position: relative;
+    width: 225px;
+    top: 4px;
+}
+
+.messageBox {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px; 
+    width: 100%;
+    padding: 10px;
+    padding-right: 40px;  /* Add padding to the right for the icon */
+    box-sizing: border-box;  /* Ensures padding is included in the width */
+    font-size: 16px;
+    outline: none;
+    border: none;
+}
+
+.sendButton {
+    position: absolute;
+    top: 50%;
+    right: 7px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.sendIcon {
+    width: 20px;  /* Adjust size as needed */
+    height: 20px;
 }
 
 .btn.copyRoomBtn,.btn.leaveRoomBtn {

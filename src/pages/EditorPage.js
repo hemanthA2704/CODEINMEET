@@ -8,10 +8,13 @@ import { faCopy,faRightFromBracket  } from '@fortawesome/free-solid-svg-icons';
 import { initSocket } from '../socket';
 import ACTIONS from '../Actions' ;
 import {Toaster} from 'react-hot-toast';
+import Chat from '../components/Chat';
+
 
 const EditorPage = () => {
     const socketRef = useRef(null);
     const codeRef = useRef(null) ;
+    const langRef = useRef(null);
     const location = useLocation();
     const { roomId } = useParams();
     const navigate = useNavigate();
@@ -30,7 +33,7 @@ const EditorPage = () => {
     const leaveRoom = () => {
       navigate('/') ;
     }
-
+    
     useEffect(() => {
         const init = async () => {
           // creates new socket and connects to server
@@ -48,6 +51,7 @@ const EditorPage = () => {
                 roomId,
                 userName: location.state?.userName,
             });
+
             socketRef.current.on(ACTIONS.JOINED , ({ allClients,userName,socketId}) => {
               console.log(userName);
               if (userName!==location.state?.userName) {
@@ -57,6 +61,7 @@ const EditorPage = () => {
               setClients(allClients)
               socketRef.current.emit(ACTIONS.SYNC_CODE , {
                 code : codeRef.current,
+                language : langRef.current,
                 socketId
               })
             })
@@ -100,7 +105,10 @@ const EditorPage = () => {
                   )}
               </div>
           </div>
-          <div className='btns'>
+
+          <Chat userName={location.state?.userName} socketRef = {socketRef} roomId={roomId}/>
+          
+          <div className='down'>
             <button className='btn leaveRoomBtn' onClick={leaveRoom}><FontAwesomeIcon icon={faRightFromBracket} /></button>
             <button className='btn copyRoomBtn' onClick={copyRoomId}><FontAwesomeIcon icon={faCopy} /></button>
           </div>
@@ -108,7 +116,11 @@ const EditorPage = () => {
         <div className='editorWrap'>
           <Editor socketRef={socketRef} roomId={roomId} changeCode={(code) => {
             codeRef.current = code ;
-          }} />
+            }}
+            changeLang={(lang)=>{
+              langRef.current = lang ;
+            }}
+          />
         </div>
     </div>
   )
