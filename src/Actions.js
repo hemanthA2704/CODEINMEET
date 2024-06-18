@@ -6,7 +6,9 @@ const ACTIONS = {
     SYNC_CODE : 'sync-code' ,
     LEAVE : 'leave' ,
     LANG_CHANGE : 'language-change',
-    MSG : 'send-message' 
+    MSG : 'send-message' ,
+    PEER_JOIN : 'peer-join' ,
+    PEER_LEAVE : 'peer-leave'
 }
 
 module.exports = ACTIONS ;

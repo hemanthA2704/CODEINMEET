@@ -86,7 +86,7 @@ const Editor = ({ socketRef, roomId, changeCode, changeLang }) => {
   return (
     <div>
       <div className='headerTab'>
-        <select className='selectLanguage' onChange={handleLanguageChange} value={language}>
+        <select className='selectLanguage' onChange={handleLanguageChange} value={language || 'text/x-c++src' }>
           <option value="text/x-c++src">C++</option>
           <option value="javascript">JavaScript</option>
           <option value="python">Python</option>

@@ -101,7 +101,7 @@ const EditorPage = () => {
               <h3 className='connectedMessage'>CONNECTED</h3>
               <div className='clientsList'>
                   {clients.map(({socketId , userName}) => 
-                    <Client key={socketId} userName={userName} />
+                    <Client key={socketId} userName={userName} myUserName = {location.state?.userName} roomId={roomId} socketRef={socketRef}/>
                   )}
               </div>
           </div>
