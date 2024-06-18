@@ -8,7 +8,8 @@ const ACTIONS = {
     LANG_CHANGE : 'language-change',
     MSG : 'send-message' ,
     PEER_JOIN : 'peer-join' ,
-    PEER_LEAVE : 'peer-leave'
+    PEER_LEAVE : 'peer-leave',
+    SYNC_PEERS : 'peers-sync'
 }
 
 module.exports = ACTIONS ;

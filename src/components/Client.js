@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Avatar from 'react-avatar';
 
 
-const Client = ({ userName, myUserName, roomId, socketRef }) => {
+const Client = ({ userName, roomId, socketRef }) => {
 
   return (
     <div className='client'>

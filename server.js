@@ -28,6 +28,12 @@ const getAllClients = (roomId) => {
     });
 }
 
+const getAllPeers = (roomId) => {
+    return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
+        return socketPeerMap[socketId]
+    })
+}
+
 io.on('connection',(socket) =>{
     console.log("socket" ,) ;
     console.log('socket connected' , socket.id) ;
@@ -48,14 +54,19 @@ io.on('connection',(socket) =>{
         })
     }) ;
 // here the work of server is to update the peerId's or all the peers.
-    socket.on(ACTIONS.PEER_JOIN , ({peerId , roomId}) => {
+    socket.on(ACTIONS.PEER_JOIN , ({peerId , roomId }) => {
         console.log("a new peerID is " + peerId)
+        console.log("socket id is " + socket.id) ;
+        console.log("all peers are" + getAllPeers(roomId))
+        io.to(socket.id).emit(ACTIONS.SYNC_PEERS , getAllPeers(roomId))
         socketPeerMap[socket.id]=peerId ;
         socket.in(roomId).emit(ACTIONS.PEER_JOIN , {peerId}) ;
     });
 
     socket.on(ACTIONS.PEER_LEAVE , ({peerId , roomId})=> {
+        console.log(`a peer with id ${peerId} left`);
         socket.in(roomId).emit(ACTIONS.PEER_LEAVE , {peerId}) ;
+        delete socketPeerMap[socket.id]
     })
 
     socket.on(ACTIONS.CODE_CHANGE,({roomId,code}) => {
@@ -76,11 +87,6 @@ io.on('connection',(socket) =>{
         console.log(newMessage) ;
         socket.in(roomId).emit(ACTIONS.MSG,{newMessage}) ;
     } )
-
-    socket.on(ACTIONS.VIDEO_SIGNAL, (data) => {
-        console.log('video coming here')
-        socket.in(data.roomId).emit(ACTIONS.VIDEO_SIGNAL, data);
-      });
     // before completely disconnecting this event will be triggered
     // if anyone removing tab or navigating to other tab this (socket will be deleted if tab closes)
     socket.on('disconnecting' , ()=> {
@@ -91,8 +97,11 @@ io.on('connection',(socket) =>{
                 socketId : socket.id ,
                 userName : userNameSocketMap[socket.id]
             })
+            
+            socket.in(roomId).emit(ACTIONS.PEER_LEAVE , {peerId : socketPeerMap[socket.id]}) ;
         })
         delete userNameSocketMap[socket.id] ;
+        delete socketPeerMap[socket.id]
         socket.leave() ;
     })
 });

@@ -9,7 +9,7 @@ import { initSocket } from '../socket';
 import ACTIONS from '../Actions' ;
 import {Toaster} from 'react-hot-toast';
 import Chat from '../components/Chat';
-
+import Me from '../components/Me'
 
 const EditorPage = () => {
     const socketRef = useRef(null);
@@ -19,7 +19,6 @@ const EditorPage = () => {
     const { roomId } = useParams();
     const navigate = useNavigate();
     const [clients, setClients] = useState([]);
-
     const copyRoomId = async () => {
       try {
         await navigator.clipboard.writeText(roomId);
@@ -100,8 +99,9 @@ const EditorPage = () => {
               </div>
               <h3 className='connectedMessage'>CONNECTED</h3>
               <div className='clientsList'>
+                  <Me myUserName={location.state?.userName} roomId={roomId} socketRef={socketRef} />
                   {clients.map(({socketId , userName}) => 
-                    <Client key={socketId} userName={userName} myUserName = {location.state?.userName} roomId={roomId} socketRef={socketRef}/>
+                    userName !== location.state?.userName && <Client key={socketId} userName={userName} roomId={roomId} socketRef={socketRef}/>
                   )}
               </div>
           </div>
