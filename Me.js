@@ -25,12 +25,11 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,myPeerId }) =>
     navigator.mediaDevices.getUserMedia({ video: true , audio : micStatus })
       .then(stream => {
         videoRef.current.srcObject = stream;
-        videoRef.current.play(); 
+        videoRef.current.play();
         clients.forEach(({ peerId }) => {
           if (peerId !== myPeerId) {
-            console.log("sending call to " , peerId)
             peerRef.current.call(peerId, stream);
-          }  
+          }
         });
       })
       .catch(err => console.error(err));
