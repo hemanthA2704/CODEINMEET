@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash } from '@fortawesome/free-solid-svg-icons';
 import Avatar from 'react-avatar';
 
-const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) => {
+const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,myPeerId }) => {
   const [videoStatus, setVideoStatus] = useState(false);
   const [micStatus, setMicStatus] = useState(false);
   const videoRef = useRef(null);
@@ -27,7 +27,7 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) =>
         videoRef.current.srcObject = stream;
         videoRef.current.play(); 
         clients.forEach(({ peerId }) => {
-          if (peerId !== mypeerId) {
+          if (peerId !== myPeerId) {
             console.log("sending call to " , peerId)
             peerRef.current.call(peerId, stream);
           }  
@@ -41,7 +41,7 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) =>
     const tracks = stream.getTracks();
     tracks.forEach(track => track.stop());
     videoRef.current.srcObject = null;
-    handleStream(mypeerId, null);
+    handleStream(myPeerId, null);
   };
 
   useEffect(() => {
