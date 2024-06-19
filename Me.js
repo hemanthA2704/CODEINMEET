@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash } from '@fortawesome/free-solid-svg-icons';
 import Avatar from 'react-avatar';
 
-const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) => {
+const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,myPeerId }) => {
   const [videoStatus, setVideoStatus] = useState(false);
   const [micStatus, setMicStatus] = useState(false);
   const videoRef = useRef(null);
@@ -26,12 +26,10 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) =>
       .then(stream => {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
-        handleStream(mypeerId, stream);
         clients.forEach(({ peerId }) => {
-          const call = peerRef.current.call(peerId, stream);
-          call.on('stream', remoteStream => {
-            handleStream(peerId, remoteStream);
-          });
+          if (peerId !== myPeerId) {
+            peerRef.current.call(peerId, stream);
+          }
         });
       })
       .catch(err => console.error(err));
@@ -42,7 +40,7 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) =>
     const tracks = stream.getTracks();
     tracks.forEach(track => track.stop());
     videoRef.current.srcObject = null;
-    handleStream(mypeerId, null);
+    handleStream(myPeerId, null);
   };
 
   useEffect(() => {
@@ -67,7 +65,7 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) =>
     <div className='client'>
       <div className='videoContainer'>
         {videoStatus ? (
-          <video ref={videoRef} className='myVideo' />
+          <video ref={videoRef} className='myVideo' muted/>
         ) : (
           <Avatar name={myUserName} size={65} round="10px" />
         )}
