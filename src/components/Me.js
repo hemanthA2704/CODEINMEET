@@ -25,13 +25,12 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) =>
     navigator.mediaDevices.getUserMedia({ video: true , audio : micStatus })
       .then(stream => {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
-        handleStream(mypeerId, stream);
+        videoRef.current.play(); 
         clients.forEach(({ peerId }) => {
-          const call = peerRef.current.call(peerId, stream);
-          call.on('stream', remoteStream => {
-            handleStream(peerId, remoteStream);
-          });
+          if (peerId !== mypeerId) {
+            console.log("sending call to " , peerId)
+            peerRef.current.call(peerId, stream);
+          }  
         });
       })
       .catch(err => console.error(err));
@@ -67,7 +66,7 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) =>
     <div className='client'>
       <div className='videoContainer'>
         {videoStatus ? (
-          <video ref={videoRef} className='myVideo' />
+          <video ref={videoRef} className='myVideo' muted />
         ) : (
           <Avatar name={myUserName} size={65} round="10px" />
         )}

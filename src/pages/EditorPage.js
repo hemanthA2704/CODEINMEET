@@ -60,7 +60,13 @@ const EditorPage = () => {
                 navigate('/');
             }
             
-            peerRef.current = new Peer() ;
+            peerRef.current =new Peer({
+              config: {
+                  'iceServers': [
+                      { url: 'stun:stun.l.google.com:19302' }
+                  ]
+              }
+          });
             
             peerRef.current.on('open', (peerId) => {
               console.log('My peer id is ' + peerId);

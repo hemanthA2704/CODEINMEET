@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Avatar from 'react-avatar';
 
-const Client = ({ userName, socketId, peerId, videoStream }) => {
+const Client = ({ userName, videoStream }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
