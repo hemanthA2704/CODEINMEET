@@ -2,6 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import CodeMirror from 'codemirror';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/ayu-mirage.css';
+import 'codemirror/theme/3024-day.css';
+import 'codemirror/theme/blackboard.css';
+import 'codemirror/theme/darcula.css';
+import 'codemirror/theme/hopscotch.css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/python/python';
 import 'codemirror/mode/clike/clike';
@@ -15,7 +19,7 @@ import ACTIONS from '../Actions';
 const Editor = ({ socketRef, roomId, changeCode, changeLang }) => {
   const editorRef = useRef(null);
   const [language, setLanguage] = useState('text/x-c++src');
-
+  const [theme , setTheme] = useState('hopscotch') ;
   const handleLanguageChange = (event) => {
     const newLanguage = event.target.value;
     setLanguage(newLanguage);
@@ -23,11 +27,16 @@ const Editor = ({ socketRef, roomId, changeCode, changeLang }) => {
     socketRef.current.emit(ACTIONS.LANG_CHANGE, { language: newLanguage, roomId });
   };
 
+  const handleThemeChange = (event) => {
+    const newTheme = event.target.value ;
+    setTheme(newTheme);
+  }
+
   useEffect(() => {
     if (!editorRef.current) {
       editorRef.current = CodeMirror.fromTextArea(document.getElementById('editorArea'), {
         mode: { name: language, json: true },
-        theme: 'ayu-mirage',
+        theme: theme,
         autoCloseTags: true,
         autoCloseBrackets: true,
         lineNumbers: true,
@@ -46,9 +55,12 @@ const Editor = ({ socketRef, roomId, changeCode, changeLang }) => {
         }
         changeCode(code);
       });
+    } else {
+      editorRef.current.setOption('theme', theme);
     }
-  }, []);
+  }, [theme]);
   
+
   useEffect(() => {
     if (editorRef.current) {
       // here this function will be called first then component will be rendered , 
@@ -80,7 +92,7 @@ const Editor = ({ socketRef, roomId, changeCode, changeLang }) => {
         socketRef.current.off(ACTIONS.LANG_CHANGE, handleLangChange);
       };
     }
-  }, [socketRef.current]);
+  }, [socketRef.current ]);
 
   return (
     <div>
@@ -94,6 +106,17 @@ const Editor = ({ socketRef, roomId, changeCode, changeLang }) => {
           <option value="ruby">Ruby</option>
           <option value="r">R</option>
         </select>
+        
+        <label className='theme'>
+          Theme : &nbsp;
+          <select className='selectTheme' onChange={handleThemeChange} value={theme || 'hopscotch'}>
+          <option value='hopscotch'>Hopscotch</option>
+          <option value='ayu-mirage'>Ayu-mirage</option>
+          <option value='3024-day'>Light</option>
+          <option value='blackboard'>Blackboard</option>
+          <option value='darcula'>Darcula</option>
+          </select>
+        </label>
       </div>
       <textarea id="editorArea"></textarea>
     </div>
