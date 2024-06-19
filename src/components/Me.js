@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash } from '@fortawesome/free-solid-svg-icons';
 import Avatar from 'react-avatar';
-
 const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,myPeerId }) => {
   const [videoStatus, setVideoStatus] = useState(false);
   const [micStatus, setMicStatus] = useState(false);
@@ -65,7 +64,7 @@ const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,myPeerId }) =>
     <div className='client'>
       <div className='videoContainer'>
         {videoStatus ? (
-          <video ref={videoRef} className='myVideo' muted />
+          <video ref={videoRef} className='myVideo' muted/>
         ) : (
           <Avatar name={myUserName} size={65} round="10px" />
         )}
