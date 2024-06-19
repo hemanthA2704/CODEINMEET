@@ -10,6 +10,9 @@ import ACTIONS from '../Actions' ;
 import {Toaster} from 'react-hot-toast';
 import Chat from '../components/Chat';
 import Me from '../components/Me'
+import Peer from 'peerjs';
+
+
 
 const EditorPage = () => {
     const socketRef = useRef(null);
@@ -19,6 +22,18 @@ const EditorPage = () => {
     const { roomId } = useParams();
     const navigate = useNavigate();
     const [clients, setClients] = useState([]);
+    const peerRef = useRef(null) ;
+    const [myPeerId , setMyPeerId] = useState();
+    const [streams, setStreams] = useState({});
+
+    const handleStream = (id, stream) => {
+      setStreams(prevStreams => ({
+        ...prevStreams,
+        [id]: stream,
+      }));
+    };
+
+    // const removeStream = ()
     const copyRoomId = async () => {
       try {
         await navigator.clipboard.writeText(roomId);
@@ -39,25 +54,33 @@ const EditorPage = () => {
             socketRef.current = await initSocket();
             socketRef.current.on('connect_error', handleErrors);
             socketRef.current.on('connect_failed', handleErrors);
-
             function handleErrors(err) {
                 console.error('Socket error:', err);
                 toast.error('Socket connection failed, please try again!');
                 navigate('/');
             }
-            // sending info to server.
-            socketRef.current.emit(ACTIONS.JOIN, {
+            
+            peerRef.current = new Peer() ;
+            
+            peerRef.current.on('open', (peerId) => {
+              console.log('My peer id is ' + peerId);
+              setMyPeerId(peerId)
+               // sending info to server.
+              socketRef.current.emit(ACTIONS.JOIN, {
                 roomId,
                 userName: location.state?.userName,
+                peerId
+              });
             });
 
             socketRef.current.on(ACTIONS.JOINED , ({ allClients,userName,socketId}) => {
-              console.log(userName);
+              console.log("All clients are" , allClients)
               if (userName!==location.state?.userName) {
                 toast.success(`${userName} joined Room.`);
                 console.log(`${userName} joined Room.`)
               }
-              setClients(allClients)
+              setClients(allClients);
+
               socketRef.current.emit(ACTIONS.SYNC_CODE , {
                 code : codeRef.current,
                 language : langRef.current,
@@ -99,10 +122,27 @@ const EditorPage = () => {
               </div>
               <h3 className='connectedMessage'>CONNECTED</h3>
               <div className='clientsList'>
-                  <Me myUserName={location.state?.userName} roomId={roomId} socketRef={socketRef} />
-                  {clients.map(({socketId , userName}) => 
-                    userName !== location.state?.userName && <Client key={socketId} userName={userName} roomId={roomId} socketRef={socketRef}/>
-                  )}
+                {peerRef.current && (
+                <Me
+                  myUserName={location.state?.userName}
+                  roomId={roomId}
+                  peerRef={peerRef}
+                  clients={clients}
+                  handleStream={handleStream}
+                  myPeerId={myPeerId}
+                />
+                )}
+                {clients.map(({ socketId, userName, peerId }) =>
+              userName !== location.state?.userName && (
+                <Client
+                  key={socketId}
+                  userName={userName}
+                  socketId={socketId}
+                  peerId={peerId}
+                  videoStream={streams[peerId]}
+                />
+              )
+            )}
               </div>
           </div>
 

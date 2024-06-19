@@ -2,74 +2,77 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash } from '@fortawesome/free-solid-svg-icons';
 import Avatar from 'react-avatar';
-import Peer from 'peerjs';
-import ACTIONS from '../Actions';
 
-const Me = ({ myUserName, roomId, socketRef }) => {
-    const [videoStatus, setVideoStatus] = useState(false);
-    const [micStatus, setMicStatus] = useState(false);
-    
+const Me = ({ myUserName, roomId, peerRef, clients, handleStream ,mypeerId }) => {
+  const [videoStatus, setVideoStatus] = useState(false);
+  const [micStatus, setMicStatus] = useState(false);
+  const videoRef = useRef(null);
 
-    const handleMic = () => {
-        setMicStatus((status) => !status);
-      };
-    
-      const handleVideo = () => {
-        setVideoStatus((status) => !status);
-      };
-      const peerRef = useRef(null);
-      const myPeerIdRef = useRef(null);
-      const allPeersRef = useRef([]);
-    
-      
-      useEffect(() => {
-        if (socketRef.current){
-            if (!peerRef.current) {
-                const peer = new Peer();
-                peerRef.current = peer;
-          
-                peerRef.current.on('open', (peerId) => {
-                  console.log('My peer id is ' + peerId);
-                  myPeerIdRef.current = peerId;
-                  socketRef.current.emit(ACTIONS.PEER_JOIN, { peerId, roomId });
-                });
-          
-                peerRef.current.on('close', () => {
-                    console.log("I with peerId " + myPeerIdRef.current + " left") ;
-                    socketRef.current.emit(ACTIONS.PEER_LEAVE, { peerId: myPeerIdRef.current, roomId });
-                });
-          
-                socketRef.current.on(ACTIONS.PEER_JOIN, ({ peerId }) => {
-                  console.log("A user with this peerId joined: " + peerId);
-                  allPeersRef.current = [...allPeersRef.current, peerId];
-                  console.log("Current peers:", allPeersRef.current);
-                });
+  const handleMic = () => {
+    setMicStatus((status) => !status);
+  };
 
-                socketRef.current.on(ACTIONS.SYNC_PEERS , (peers) => {
-                    allPeersRef.current = [...allPeersRef.current , peers]
-                    console.log('I joined and my peers are'  , allPeersRef.current) ;
-                })
+  const handleVideo = () => {
+    if (videoStatus) {
+      stopVideoStream();
+    } else {
+      startVideoStream();
+    }
+    setVideoStatus((status) => !status);
+  };
 
-                socketRef.current.on(ACTIONS.PEER_LEAVE, ({ peerId }) => {
-                  allPeersRef.current = allPeersRef.current.filter((id) => id !== peerId);
-                  console.log(`A user with peerId ${peerId} left . Current peers : `, allPeersRef.current);
-                });
-              }
-          
-              return () => {
-                if (peerRef.current) {
-                  peerRef.current.destroy();
-                  peerRef.current = null; // Ensure the ref is reset
-                }
-              };
-        }
-      }, [roomId, socketRef.current]);
-    
-  
+  const startVideoStream = () => {
+    navigator.mediaDevices.getUserMedia({ video: true , audio : micStatus })
+      .then(stream => {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        handleStream(mypeerId, stream);
+        clients.forEach(({ peerId }) => {
+          const call = peerRef.current.call(peerId, stream);
+          call.on('stream', remoteStream => {
+            handleStream(peerId, remoteStream);
+          });
+        });
+      })
+      .catch(err => console.error(err));
+  };
+
+  const stopVideoStream = () => {
+    const stream = videoRef.current.srcObject;
+    const tracks = stream.getTracks();
+    tracks.forEach(track => track.stop());
+    videoRef.current.srcObject = null;
+    handleStream(mypeerId, null);
+  };
+
+  useEffect(() => {
+    if (peerRef.current) {
+      peerRef.current.on('call', call => {
+        call.answer();
+        call.on('stream', remoteStream => {
+          handleStream(call.peer, remoteStream);
+        });
+      });
+    }
+
+    return () => {
+      if (peerRef.current) {
+        peerRef.current.destroy();
+        peerRef.current = null; // Ensure the ref is reset
+      }
+    };
+  }, [roomId, peerRef]);
+
   return (
     <div className='client'>
-      <Avatar name={myUserName} size={35} round="10px" />
-      <span className='userName'>{myUserName+' (you)'}</span>
+      <div className='videoContainer'>
+        {videoStatus ? (
+          <video ref={videoRef} className='myVideo' />
+        ) : (
+          <Avatar name={myUserName} size={65} round="10px" />
+        )}
+      </div>
+      <span className='userName'>{myUserName + ' (you)'}</span>
       <div className='audVidBtns'>
         <button className='btns mic' onClick={handleMic}>
           <FontAwesomeIcon icon={micStatus ? faMicrophone : faMicrophoneSlash} />
@@ -79,7 +82,7 @@ const Me = ({ myUserName, roomId, socketRef }) => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Me
+export default Me;

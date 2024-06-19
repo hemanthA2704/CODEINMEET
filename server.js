@@ -4,8 +4,17 @@ const http = require('http');
 const cors = require('cors')
 const {Server} = require("socket.io");
 const ACTIONS = require('./src/Actions') ;
+const path = require("path");
 
-app.use(cors());
+app.use(cors({
+    origin:'*',
+    methods: ['GET','POST']
+}));
+
+app.use(express.static('build')) ;
+app.use((req,res,next) => {
+    res.sendFile(path.join(__dirname,'build','index.html'));
+})
 
 const server = http.createServer(app) ;
 const io = new Server(server, {
@@ -23,27 +32,33 @@ const getAllClients = (roomId) => {
     return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
         return {
             userName : userNameSocketMap[socketId],
-            socketId : socketId
+            peerId : socketPeerMap[socketId],
+            socketId : socketId,
         }  
     });
 }
 
-const getAllPeers = (roomId) => {
-    return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
-        return socketPeerMap[socketId]
-    })
-}
+// const getAllPeers = (roomId) => {
+//     return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
+//         return {
+//             peerId : socketPeerMap[socketId] ,
+//             socketId : socketId
+//         }
+//     })
+// }
 
 io.on('connection',(socket) =>{
     console.log("socket" ,) ;
     console.log('socket connected' , socket.id) ;
-    socket.on(ACTIONS.JOIN , ({roomId , userName})=>{
+
+    socket.on(ACTIONS.JOIN , ({roomId , userName , peerId})=>{
         userNameSocketMap[socket.id]=userName ;
+        socketPeerMap[socket.id]=peerId ;
         // if a room already exists with current roomId then this socket will be added 
         // to roomId, otherwise new room will be created with roomId
         socket.join(roomId);
         const allClients = getAllClients(roomId)   
-        console.log(allClients)
+        console.log("all clients are : " , allClients)
 
         allClients.forEach(({socketId}) => {
             io.to(socketId).emit(ACTIONS.JOINED ,{
@@ -54,20 +69,20 @@ io.on('connection',(socket) =>{
         })
     }) ;
 // here the work of server is to update the peerId's or all the peers.
-    socket.on(ACTIONS.PEER_JOIN , ({peerId , roomId }) => {
-        console.log("a new peerID is " + peerId)
-        console.log("socket id is " + socket.id) ;
-        console.log("all peers are" + getAllPeers(roomId))
-        io.to(socket.id).emit(ACTIONS.SYNC_PEERS , getAllPeers(roomId))
-        socketPeerMap[socket.id]=peerId ;
-        socket.in(roomId).emit(ACTIONS.PEER_JOIN , {peerId}) ;
-    });
+    // socket.on(ACTIONS.PEER_JOIN , ({peerId , roomId }) => {
+    //     console.log("a new peerID is " + peerId)
+    //     console.log("socket id is " + socket.id) ;
+    //     console.log("all peers are : " + getAllPeers(roomId))
+    //     socketPeerMap[socket.id]=peerId ;
+    //     io.to(socket.id).emit(ACTIONS.SYNC_PEERS , getAllPeers(roomId))
+    //     socket.in(roomId).emit(ACTIONS.PEER_JOIN , {peerId , socketId : socket.id}) ;
+    // });
 
-    socket.on(ACTIONS.PEER_LEAVE , ({peerId , roomId})=> {
-        console.log(`a peer with id ${peerId} left`);
-        socket.in(roomId).emit(ACTIONS.PEER_LEAVE , {peerId}) ;
-        delete socketPeerMap[socket.id]
-    })
+    // socket.on(ACTIONS.PEER_LEAVE , ({peerId , roomId})=> {
+    //     console.log(`a peer with id ${peerId} left`);
+    //     socket.in(roomId).emit(ACTIONS.PEER_LEAVE , {peerId}) ;
+    //     delete socketPeerMap[socket.id]
+    // })
 
     socket.on(ACTIONS.CODE_CHANGE,({roomId,code}) => {
         // except current socket , request will be sent to remaining sockets present in the room
@@ -97,8 +112,8 @@ io.on('connection',(socket) =>{
                 socketId : socket.id ,
                 userName : userNameSocketMap[socket.id]
             })
-            
-            socket.in(roomId).emit(ACTIONS.PEER_LEAVE , {peerId : socketPeerMap[socket.id]}) ;
+
+            // socket.in(roomId).emit(ACTIONS.PEER_LEAVE , {peerId : socketPeerMap[socket.id]}) ;
         })
         delete userNameSocketMap[socket.id] ;
         delete socketPeerMap[socket.id]

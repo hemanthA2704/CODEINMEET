@@ -125,10 +125,46 @@
     border-radius: 5px;
     /* text-align: center; */
     /* flex: 1 1 calc(50% - 10px); */
-    width : 154px;
-    height : 100px ;
+    width: 100%;
+    height: 100%;
+    /* width : 154px; */
+    /* height : 100px ; */
     box-sizing: border-box;
 }
+
+.videoContainer {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height : 70%;
+}
+
+.clientVideoContainer {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 85%;
+}
+
+.clientVideo {
+    width: 100%;
+    height: 200px;
+    border-radius: 5%;
+    height: 100%;
+}
+
+.myVideo {
+    width : 100% ;
+    height : 100% ;
+    border-radius: 5%;
+}
+
 
 .userName {
     margin-top: 5px;

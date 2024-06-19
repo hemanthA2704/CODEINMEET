@@ -24,7 +24,6 @@ const Editor = ({ socketRef, roomId, changeCode, changeLang }) => {
   };
 
   useEffect(() => {
-    console.log(editorRef.current)
     if (!editorRef.current) {
       editorRef.current = CodeMirror.fromTextArea(document.getElementById('editorArea'), {
         mode: { name: language, json: true },
